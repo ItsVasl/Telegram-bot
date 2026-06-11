@@ -4,46 +4,41 @@ import os
 
 TOKEN = os.environ["BOT_TOKEN"]
 
+TRIGGERS = {
+    "enti",
+    "ente",
+    "ask",
+    "emaindi",
+    "emaindhi",
+    "enduku",
+    "enduko",
+    "endhuko",
+    "endhi"
+}
+
 async def reply_with_gif(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
 
-    text = (update.message.text or "").lower()
-
-    triggers = {
-        "enti",
-        "ente",
-        "what",
-        "why",
-        "kyu",
-        "kaiko",
-        "how",
-        "ela",
-        "eppudu",
-        "when",
-        "yeppudu",
-        "yekkada",
-        "where",
-        "ask",
-        "emaindi",
-        "emaindhi",
-        "enduku",
-        "enduko",
-        "endhuko",
-        "endhi"
-    }
+    # Get text OR caption
+    text = (
+        update.message.text
+        or update.message.caption
+        or ""
+    ).lower()
 
     words = text.split()
 
-    if "?" in text or any(word in triggers for word in words):
+    if "?" in text or any(word in TRIGGERS for word in words):
         with open("just-asking-brahmi.mp4", "rb") as gif_file:
             await update.message.reply_animation(animation=gif_file)
 
 app = Application.builder().token(TOKEN).build()
 
+# Listen to both text and captions/media
 app.add_handler(
     MessageHandler(
-        filters.TEXT & ~filters.COMMAND,
+        (filters.TEXT | filters.CAPTION) & ~filters.COMMAND,
         reply_with_gif
     )
 )
